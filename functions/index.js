@@ -17,3 +17,37 @@ const logger = require("firebase-functions/logger");
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
+const { recordImpression } = require("./src/impressions");
+
+exports.getVastSample = onRequest((request, response) => {
+  logger.info("VAST sample requested", {structuredData: true});
+
+  const vastXML = `<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="2.0">
+  <Ad id="12345">
+    <InLine>
+      <AdSystem>My Ad System</AdSystem>
+      <AdTitle>My VAST Ad</AdTitle>
+      <Impression><![CDATA[http://example.com/impression]]></Impression>
+      <Creatives>
+        <Creative>
+          <Linear>
+            <Duration>00:00:30</Duration>
+            <MediaFiles>
+              <MediaFile delivery="progressive" type="video/mp4" width="640" height="360">
+                <![CDATA[http://example.com/my-ad.mp4]]>
+              </MediaFile>
+            </MediaFiles>
+          </Linear>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>`;
+
+  response.set('Content-Type', 'application/xml');
+  response.send(vastXML);
+});
+
+exports.recordImpression = recordImpression;
