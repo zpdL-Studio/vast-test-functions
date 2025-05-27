@@ -7,8 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {onRequest} = require('firebase-functions/v2/https');
-const logger = require('firebase-functions/logger');
+const { onRequest } = require('firebase-functions/v2/https');
+const { logger } = require('firebase-functions/logger');
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
@@ -18,13 +18,14 @@ const logger = require('firebase-functions/logger');
 //   response.send("Hello from Firebase!");
 // });
 
-const {recordImpression} = require('./src/impressions');
+const { recordImpression } = require('./src/impressions');
+const { requestAds } = require('./src/requestAds');
 
 exports.getVastSample = onRequest({
   cors: true,
   region: 'asia-northeast3',
 }, (request, response) => {
-  logger.info('VAST sample requested', {structuredData: true});
+  logger.info('VAST sample requested', { structuredData: true });
 
   const vastXML = `<?xml version="1.0" encoding="UTF-8"?>
 <VAST version="2.0">
@@ -54,3 +55,4 @@ exports.getVastSample = onRequest({
 });
 
 exports.recordImpression = recordImpression;
+exports.requestAds = requestAds;

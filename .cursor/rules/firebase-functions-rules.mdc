@@ -1,0 +1,89 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Project Rules for "Firebase Ad Server" (JavaScript with Swagger/OpenAPI)
+
+These rules are designed to guide the Cursor AI Tool in generating and managing optimal code for a JavaScript-based ad server project utilizing Firebase Cloud Functions, Firestore, and Cloud Storage, with the added integration of Swagger (OpenAPI).
+
+### 1. Project Goals & Core Values
+
+* **Primary Goal: High Performance & Low-Latency Ad Response:** All Cloud Functions must be designed to respond to requests with minimal latency. Avoid unnecessary I/O or complex computations.
+* **Scalability & Cost-Efficiency:** Encourage the creation of stateless functions to flexibly handle traffic increases. Always consider methods to minimize Cloud Functions invocations and Firestore read/write costs.
+* **Data Consistency & Stability:** Ad logic and data must always be consistent and accurate. Prevent abnormal terminations or data loss.
+* **Clear API Interfaces:** All API specifications must be clearly defined and documented through Swagger.
+
+---
+
+### 2. Technology Stack Specific Rules
+* **Firebase Cloud Functions (Node.js/JavaScript):**
+    * **Use Firebase Functions V2:** All new and existing functions must be migrated to or written using the **Firebase Functions V2 API (e.g., `firebase-functions/v2`)**. Prioritize V2 features like `onRequest` for HTTP functions with explicit configuration for CPU, memory, and concurrency.    
+    * **Mandatory Strong Input Validation:** Given JavaScript's dynamic typing, **strict validation** of all external inputs (HTTP request bodies, query parameters, Firestore data) is essential. (e.g., recommend using validation libraries like Joi or Zod).
+    * **Minimize Cold Starts:** Keep functions lightweight and minimize global variable initialization logic to reduce cold start times. Consider using ES Modules (ESM) where applicable.
+    * **Environment Variable Management:** Sensitive information must be managed via Cloud Functions environment variables or Google Secret Manager. Do not hardcode secrets directly into the code.
+    * **Consider Idempotency:** When processing ad requests, write functions to be idempotent to ensure safe re-execution without adverse effects.
+    * **Asynchronous Handling:** Write asynchronous code clearly and readably using the `async/await` pattern. Actively utilize Promise-based APIs.
+* **Firestore (NoSQL DB):**
+    * **Data Modeling:** Model ad data considering Firestore's NoSQL characteristics (e.g., leverage Collection Groups, Denormalization). Prioritize **read efficiency** above all else.
+    * **Query Optimization:** Consider creating indexes when using `where` clauses, and prefer single document reads with `get` requests. Handle complex joins or aggregations within Cloud Functions.
+    * **Utilize Batch Writes:** Use `batch` operations for multiple document writes to improve efficiency and reduce costs.
+    * **Use Transactions:** For critical data consistency, use `transaction` to ensure atomicity.
+* **Firebase Cloud Storage:**
+    * **Static Ad Asset Storage:** Store static ad assets like images and videos in Cloud Storage and serve them directly to reduce the load on Cloud Functions.
+    * **Leverage GCS Client Libraries:** When accessing Storage from Cloud Functions, use the Google Cloud Storage client library directly instead of the Firebase Admin SDK for more fine-grained control.
+    * **Caching Strategy:** Recommend setting Cache-Control headers for frequently accessed ad assets to encourage client-side caching.
+
+---
+
+### 3. Code Architecture & Design Patterns
+
+* **Modular Functions:** Each Cloud Function must adhere to the **Single Responsibility Principle** and be modularized accordingly.
+* **Separate Utility Functions:** Common logic (e.g., authentication, data validation, logging) should be separated into distinct utility files to enhance reusability.
+* **Consider Dependency Injection:** Where necessary for testability, consider using dependency injection patterns to reduce coupling with external services.
+* **API Documentation-Driven Development:** API design should prioritize Swagger (OpenAPI) specification creation, and code should be implemented based on this specification.
+
+---
+
+### 4. Performance & Optimization Targets
+
+* **Minimize Cloud Functions Memory/CPU Usage:** Avoid unnecessary computations or the use of heavy libraries to reduce function execution costs.
+* **Minimize Firestore Read/Write Operations:** Perform as few document reads/writes as possible to save costs and prevent unnecessary hot spots.
+* **Utilize HTTP Keep-Alive:** Leverage HTTP Keep-Alive for calls between Cloud Functions to reduce connection overhead.
+
+---
+
+### 5. Security Specific Rules
+
+* **Firebase Authentication/Admin SDK Use:** User authentication and authorization must be handled securely through Firebase Authentication or the Admin SDK.
+* **Firestore Security Rules:** Write strict Firestore security rules to control data access permissions granularly (e.g., `allow read: if request.auth != null;`).
+* **Cloud Storage Security Rules:** Configure Cloud Storage bucket access to follow the **Least Privilege Principle**.
+* **Data Encryption:** Consider encrypting sensitive user data at rest, and ensure all data in transit uses HTTPS.
+
+---
+
+### 6. Testing Strategy
+
+* **Unit Tests:** Unit tests must be written for each Cloud Function's logic to ensure functional correctness. Use Jest or Mocha.
+* **Integration Tests:** Write integration tests to confirm Cloud Functions interact correctly with other Firebase services like Firestore and Storage.
+* **API Contract Tests:** Perform API contract testing based on the Swagger (OpenAPI) specification to verify that the actual API implementation matches the defined spec.
+* **Utilize Emulators:** Actively use the **Firebase Emulator Suite** during development and testing for fast and safe local testing.
+
+---
+
+### 7. Deployment & Operations Considerations
+
+* **CI/CD Pipeline:** Automate Cloud Functions deployment through a CI/CD pipeline to ensure consistent deployments. **Include automatic generation or validation of Swagger (OpenAPI) documentation** in the CI/CD pipeline.
+* **Logging & Monitoring:** Collect Cloud Functions logs via Stackdriver (Cloud Logging) and continuously monitor function performance and errors through Cloud Monitoring.
+* **Error Tracking:** Implement robust logging and error handling to enable quick identification of root causes for errors using tools like Cloud Trace or Sentry.
+
+---
+
+### 8. API Documentation & Swagger/OpenAPI
+
+* **Mandatory Swagger (OpenAPI) Specification:** Every HTTP-triggered Cloud Function must have a corresponding Swagger (OpenAPI) specification. Maintain `openapi.yaml` or `openapi.json` files within the project root or the `functions` directory.
+* **Consistency Between Spec and Implementation:** Ensure there are no discrepancies between the API specification and the actual Cloud Function implementation. Cursor will use this specification as a guide for code generation/modification.
+* **Use Automated Documentation Tools:** Host Swagger UI within a Cloud Function using `swagger-ui-express` or similar libraries to provide easily accessible API documentation.
+* **Automate Spec Updates:** Establish a process for updating the Swagger specification whenever API changes occur (e.g., explore tools for auto-generating OpenAPI specs from JSDoc).
+* **Leverage Schema Definitions:** Clearly define schemas for request/response payloads in the OpenAPI specification to maintain data structure consistency.

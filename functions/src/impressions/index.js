@@ -1,4 +1,4 @@
-const {onRequest} = require('firebase-functions/v2/https');
+const { onRequest } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
@@ -16,7 +16,7 @@ exports.recordImpression = onRequest({
   cors: true,
   region: 'asia-northeast3',
 }, async (request, response) => {
-  logger.info('Impression request received', {method: request.method, url: request.url});
+  logger.info('Impression request received', { method: request.method, url: request.url });
 
   try {
     // Impression 데이터 추출
@@ -40,12 +40,12 @@ exports.recordImpression = onRequest({
     // Firestore에 저장
     // eslint-disable-next-line max-len
     const docRef = await db.collection('impressions').add(impressionData);
-    logger.info(`Impression recorded with ID: ${docRef.id}`, {structuredData: true});
+    logger.info(`Impression recorded with ID: ${docRef.id}`, { structuredData: true });
 
     // 성공 응답
     response.status(200).send('Impression recorded successfully');
   } catch (error) {
-    logger.error('Error recording impression:', error, {structuredData: true});
+    logger.error('Error recording impression:', error, { structuredData: true });
     // 에러 응답
     response.status(500).send('Error recording impression');
   }
