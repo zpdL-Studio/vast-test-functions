@@ -10,7 +10,7 @@ VAST 3.0(Video Ad Serving Template) 광고 요청에 대해 동적으로 VAST XM
 
 - **URL:** `/requestAds`
 - **Method:** `GET`
-- **Content-Type:** `application/json`
+- **Content-Type:** `application/xml`
 
 ### 응답
 
@@ -74,13 +74,33 @@ VAST 3.0(Video Ad Serving Template) 광고 요청에 대해 동적으로 VAST XM
 
 ## 3. 내부 처리 로직
 
-1. **VAST XML 생성**
+1. **Ad ID 생성**
+
+   - `ad_requests` 컬렉션에서 새로운 문서 아이드를 생성
+   - 자동 생성된 문서 ID를 VAST Ad ID로 사용
+
+2. **VAST XML 생성**
 
    - xmlbuilder2 라이브러리 사용
+   - Firestore 문서 ID를 Ad ID로 사용
    - 동적 트래킹 URL 생성
    - 미디어 파일 URL 포함
 
-2. **응답 전송**
+3. **요청 정보 저장**
+
+   - Firestore의 `ad_requests` 컬렉션에 요청 정보 저장:
+
+   ```javascript
+    {
+      adId: string,          // 생성된 Ad ID
+      ipAddress: string,      // 요청자 IP
+      userAgent: string,      // User-Agent
+      vastXml: string,        // 생성된 VAST XML
+      servedAt: timestamp     // 응답 전송 시간
+    }
+   ```
+
+4. **응답 전송**
    - Content-Type 헤더 설정
    - VAST XML 반환
 

@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 
@@ -19,8 +19,8 @@ These rules are designed to guide the Cursor AI Tool in generating and managing 
 
 ### 2. Technology Stack Specific Rules
 * **Firebase Cloud Functions (Node.js/JavaScript):**
-    * **Use Firebase Functions V2:** All new and existing functions must be migrated to or written using the **Firebase Functions V2 API (e.g., `firebase-functions/v2`)**. Prioritize V2 features like `onRequest` for HTTP functions with explicit configuration for CPU, memory, and concurrency.    
-    * **Mandatory Strong Input Validation:** Given JavaScript's dynamic typing, **strict validation** of all external inputs (HTTP request bodies, query parameters, Firestore data) is essential. (e.g., recommend using validation libraries like Joi or Zod).
+    * **Use Firebase Functions V2:** All new and existing functions must be migrated to or written using the **Firebase Functions V2 API (e.g., `firebase-functions/v2`)**. Prioritize V2 features like `onRequest` for HTTP functions with explicit configuration for CPU, memory, and concurrency.
+    * **Mandatory Strong Input Validation:** Given JavaScript's dynamic typing, **strict validation** of all external inputs (HTTP request bodies, query parameters, Firestore data) is essential. (e.g., recommend using validation libraries like Zod).
     * **Minimize Cold Starts:** Keep functions lightweight and minimize global variable initialization logic to reduce cold start times. Consider using ES Modules (ESM) where applicable.
     * **Environment Variable Management:** Sensitive information must be managed via Cloud Functions environment variables or Google Secret Manager. Do not hardcode secrets directly into the code.
     * **Consider Idempotency:** When processing ad requests, write functions to be idempotent to ensure safe re-execution without adverse effects.
