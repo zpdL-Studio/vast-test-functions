@@ -3,12 +3,13 @@ const { create } = require('xmlbuilder2');
 /**
  * 기본 VAST 3.0 XML을 생성합니다.
  * @param {string} [trackingUrl=''] - 이벤트 트래킹 기본 URL
+ * @param {string} [adId='test-ad-1'] - 광고 ID
  * @return {string} VAST XML 문자열
  */
-const generateBasicVastXml = (trackingUrl = '') => {
+const generateBasicVastXml = (trackingUrl = '', adId = 'test-ad-1') => {
   const vast = create({ version: '1.0', encoding: 'UTF-8' })
     .ele('VAST', { version: '3.0' })
-    .ele('Ad', { id: 'test-ad-1' })
+    .ele('Ad', { id: adId })
     .ele('InLine')
     .ele('AdSystem')
     .txt('Test Ad Server')
@@ -21,6 +22,7 @@ const generateBasicVastXml = (trackingUrl = '') => {
   if (trackingUrl) {
     const impressionUrl = new URL(trackingUrl);
     impressionUrl.searchParams.set('event', 'impression');
+    impressionUrl.searchParams.set('adId', adId);
 
     vast.ele('Impression')
       .dat(impressionUrl.toString())
@@ -60,6 +62,7 @@ const generateBasicVastXml = (trackingUrl = '') => {
     trackingEvents.forEach((event) => {
       const url = new URL(trackingUrl);
       url.searchParams.set('event', event);
+      url.searchParams.set('adId', adId);
 
       trackingElement
         .ele('Tracking', { event })
@@ -72,6 +75,7 @@ const generateBasicVastXml = (trackingUrl = '') => {
     // VideoClicks도 같은 URL 사용
     const clickUrl = new URL(trackingUrl);
     clickUrl.searchParams.set('event', 'videoClick');
+    clickUrl.searchParams.set('adId', adId);
 
     vast.ele('VideoClicks')
       .ele('ClickThrough')

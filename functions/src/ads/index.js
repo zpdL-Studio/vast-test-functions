@@ -1,9 +1,9 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { generateBasicVastXml } = require('./vastXmlGenerator');
 const { logger } = require('firebase-functions');
-const { isEmulator, getCurrentUrlFromRequest, getFunctionUrl } = require('../util/firebase_environment');
+const { isEmulator } = require('../util/firebase_environment');
 
-const adsEventsUrl = isEmulator() ? 'http://127.0.0.1:5001/vast-test-697cc/asia-northeast3/ads-events' : process.env.EVENT_URL;
+const adsEventsUrl = isEmulator() ? 'http://127.0.0.1:5001/vast-test-697cc/asia-northeast3/adsTranking-events' : process.env.EVENT_URL;
 
 
 /**
@@ -15,7 +15,7 @@ exports.requestVast = onRequest({
 }, async (req, res) => {
   logger.info('VAST 요청 받음:', req.query);
   try {
-    const vastXml = generateBasicVastXml(adsEventsUrl);
+    const vastXml = generateBasicVastXml(adsEventsUrl, 'test-ad-1');
 
     res.set('Content-Type', 'application/xml');
     res.status(200).send(vastXml);
