@@ -12,10 +12,11 @@ module.exports = {
   },
   rules: {
     'max-len': ['error', {
-      code: 100,
+      code: 80,
       ignoreUrls: true,
       ignoreStrings: true,
       ignorePattern: '^\\s*<.*>$', // XML 태그 라인 무시
+      ignoreComments: true, // 모든 주석 무시
     }],
     'indent': ['error', 2],
     'quotes': ['error', 'single'],
