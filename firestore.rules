@@ -1,22 +1,107 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 기본 함수: 인증된 사용자인지 확인
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // 기본 함수: 관리자 권한을 가진 사용자인지 확인
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // 기본 함수: 유효한 타임스탬프인지 확인
+    function isValidTimestamp(timestamp) {
+      return timestamp is timestamp &&
+             timestamp.seconds > 0;
+    }
+
     // vast_events 컬렉션은 Cloud Functions에서만 쓰기 가능
     match /vast_events/{eventId} {
       allow read: if false;
       allow write: if false;
     }
-    
+
     // ad_campaigns 컬렉션은 관리자만 쓰기 가능
     match /ad_campaigns/{campaignId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.token.admin == true;
     }
-    
+
     // ad_creatives 컬렉션은 관리자만 쓰기 가능
     match /ad_creatives/{creativeId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.token.admin == true;
     }
+
+    // 광고(ads) 컬렉션 규칙
+    match /ads/{adId} {
+      // 읽기: 모든 사용자 허용
+      allow read: if true;
+
+      // 쓰기: 관리자만 허용
+      allow create, update: if isAdmin() &&
+        // 필수 필드 검증
+        request.resource.data.title is string &&
+        request.resource.data.advertiser is string &&
+        isValidTimestamp(request.resource.data.createdAt) &&
+        isValidTimestamp(request.resource.data.updatedAt) &&
+        // mediaFiles 배열 검증
+        request.resource.data.mediaFiles is list &&
+        // settings 객체 검증
+        request.resource.data.settings.impressionGoal is number &&
+        request.resource.data.settings.dailyBudget is number &&
+        // stats 객체 검증
+        request.resource.data.stats.impressions is number &&
+        request.resource.data.stats.clicks is number &&
+        request.resource.data.stats.completions is number;
+
+      // 삭제: 관리자만 허용
+      allow delete: if isAdmin();
+    }
+
+    // 광고 요청(ad_requests) 컬렉션 규칙
+    match /ad_requests/{requestId} {
+      // 읽기: 인증된 사용자만 허용
+      allow read: if isAuthenticated();
+
+      // 생성: 모든 사용자 허용 (로깅 목적)
+      allow create: if true &&
+        // 필수 필드 검증
+        isValidTimestamp(request.resource.data.timestamp) &&
+        request.resource.data.ip is string &&
+        request.resource.data.userAgent is string &&
+        // params 객체 검증
+        request.resource.data.params.width is number &&
+        request.resource.data.params.height is number &&
+        request.resource.data.params.language is string &&
+        request.resource.data.params.country is string &&
+        request.resource.data.params.device is string;
+
+      // 수정 및 삭제: 금지
+      allow update, delete: if false;
+    }
+
+    // 이벤트 추적(events) 컬렉션 규칙
+    match /events/{eventId} {
+      // 읽기: 인증된 사용자만 허용
+      allow read: if isAuthenticated();
+
+      // 생성: 모든 사용자 허용 (이벤트 추적 목적)
+      allow create: if true &&
+        // 필수 필드 검증
+        request.resource.data.adId is string &&
+        request.resource.data.requestId is string &&
+        isValidTimestamp(request.resource.data.timestamp) &&
+        request.resource.data.type in ['impression', 'click', 'start',
+                                     'firstQuartile', 'midpoint',
+                                     'thirdQuartile', 'complete',
+                                     'mute', 'unmute', 'pause',
+                                     'resume', 'fullscreen'];
+
+      // 수정 및 삭제: 금지
+      allow update, delete: if false;
+    }
   }
-} 
+}
