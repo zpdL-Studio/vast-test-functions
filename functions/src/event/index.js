@@ -17,14 +17,12 @@ const db = getFirestore();
 const saveEventToFirestore = async (event, data) => {
   try {
     const eventRef = db.collection('ads_events').doc();
-    const timestamp = new Date();
 
     const eventData = {
       'event': event,
       ...data,
-      'createdAt': timestamp,
+      'timestamp': new Date(),
     };
-    logger.info(`이벤트 저장 성공 [${JSON.stringify(eventData)}]:`);
     await eventRef.set(eventData);
     logger.info(`이벤트 저장 성공 [${event}]:`, eventRef.id);
     return eventRef;
