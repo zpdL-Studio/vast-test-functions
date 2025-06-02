@@ -20,7 +20,7 @@ exports.requestVast = onRequest({
 }, async (req, res) => {
   logger.info('VAST 요청 받음:', req.query);
   try {
-    const vastXml = generateBasicVastXml(adsEventsUrl, 'test-ad-1');
+    const vastXml = generateBasicVastXml('test-ad-1', '', adsEventsUrl);
     // CORS 헤더 설정
     res.set('Access-Control-Allow-Credentials', 'true');
     res.set('Access-Control-Allow-Origin', 'https://imasdk.googleapis.com');

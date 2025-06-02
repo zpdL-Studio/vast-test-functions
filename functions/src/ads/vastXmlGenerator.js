@@ -1,14 +1,15 @@
 const { create } = require('xmlbuilder2');
 
 /**
- * VAST 4.0 XML을 생성합니다.
- * @param {string} [trackingUrl=''] - 이벤트 트래킹 기본 URL
+ * VAST 4.1 XML을 생성합니다.
  * @param {string} [adId='test-ad-1'] - 광고 ID
+ * @param {string} [clickThroughUrl=''] - 광고 클릭시 이동할 URL
+ * @param {string} [trackingUrl=''] - 이벤트 트래킹 기본 URL
  * @return {string} VAST XML 문자열
  */
-const generateBasicVastXml = (trackingUrl = '', adId = 'test-ad-1') => {
+const generateBasicVastXml = (adId = 'test-ad-1', clickThroughUrl = '', trackingUrl = '') => {
   const vast = create({ version: '1.0', encoding: 'UTF-8' })
-    .ele('VAST', { version: '4.0' })
+    .ele('VAST', { version: '4.1' })
     .ele('Ad', { id: adId })
     .ele('InLine')
     .ele('AdSystem', { version: '1.0' })
@@ -89,26 +90,27 @@ const generateBasicVastXml = (trackingUrl = '', adId = 'test-ad-1') => {
 
     trackingElement.up();
 
-    // VideoClicks 추가
-    const videoClicks = creative.ele('VideoClicks');
+    // VideoClicks 추가 (clickThroughUrl이 있는 경우에만)
+    if (clickThroughUrl) {
+      const videoClicks = creative.ele('VideoClicks');
 
-    // ClickThrough
-    const clickUrl = new URL(trackingUrl);
-    clickUrl.searchParams.set('event', 'clickThrough');
-    clickUrl.searchParams.set('adId', adId);
-    videoClicks.ele('ClickThrough', { id: 'click-1' })
-      .dat(clickUrl.toString())
-      .up();
+      // ClickThrough
+      videoClicks.ele('ClickThrough', { id: 'click-1' })
+        .dat(clickThroughUrl)
+        .up();
 
-    // ClickTracking
-    const clickTrackingUrl = new URL(trackingUrl);
-    clickTrackingUrl.searchParams.set('event', 'click');
-    clickTrackingUrl.searchParams.set('adId', adId);
-    videoClicks.ele('ClickTracking', { id: 'clickTracking-1' })
-      .dat(clickTrackingUrl.toString())
-      .up();
+      // ClickTracking (트래킹 URL이 있는 경우에만)
+      if (trackingUrl) {
+        const clickTrackingUrl = new URL(trackingUrl);
+        clickTrackingUrl.searchParams.set('event', 'click');
+        clickTrackingUrl.searchParams.set('adId', adId);
+        videoClicks.ele('ClickTracking', { id: 'clickTracking-1' })
+          .dat(clickTrackingUrl.toString())
+          .up();
+      }
 
-    videoClicks.up();
+      videoClicks.up();
+    }
   }
 
   // MediaFiles 추가 (VAST 4.0에서는 mimes 속성이 필수)
